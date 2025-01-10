@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kümes Takip Sistemi - Giriş</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #121212;
+            color: #e0e0e0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .login-container {
+            background-color: #1e1e1e;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+            width: 300px;
+            text-align: center;
+        }
+
+            .login-container h2 {
+                margin-bottom: 20px;
+                color: #1abc9c;
+            }
+
+            .login-container input {
+                width: 80%;
+                padding: 10px;
+                margin: 10px 0;
+                border: 1px solid #333;
+                border-radius: 5px;
+                background-color: #333;
+                color: #e0e0e0;
+            }
+
+            .login-container button {
+                width: 85%;
+                padding: 10px;
+                background-color: #1abc9c;
+                border: none;
+                border-radius: 5px;
+                color: white;
+                font-size: 1rem;
+                cursor: pointer;
+            }
+
+                .login-container button:hover {
+                    background-color: #16a085;
+                }
+    </style>
+</head>
+<body>
+
+    <div class="login-container">
+        <h2>Kümes Takip Sistemi</h2>
+        <input type="text" id="username" placeholder="Kullanıcı Adı">
+        <input type="password" id="password" placeholder="Şifre">
+        <button onclick="girisYap()">Giriş Yap</button>
+    </div>
+
+    <script>
+        function girisYap() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            if (username === "admin" && password === "admin123") {
+                localStorage.setItem("userType", "admin");
+                window.location.href = "dashboard.html";
+            } else if (username === "user" && password === "user123") {
+                localStorage.setItem("userType", "user");
+                window.location.href = "dashboard.html";
+            } else {
+                alert("Geçersiz giriş. Lütfen tekrar deneyin.");
+            }
+        }
+    </script>
+
+</body>
+</html>

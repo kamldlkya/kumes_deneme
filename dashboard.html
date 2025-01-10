@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DHT22 Sensör Verileri</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f3f4f6;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            text-align: center;
+            background: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            width: 90%;
+            max-width: 400px;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        .card {
+            background: #e3f2fd;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+        }
+
+        .value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #0288d1;
+        }
+
+        .error {
+            color: red;
+            font-size: 1.2em;
+        }
+    </style>
+    <script>
+        // Arduino'nun sabit IP adresi
+        const arduinoIp = 'http://192.168.1.50/data';
+
+        function fetchData() {
+            fetch(arduinoIp)
+                .then(response => response.json())
+                .then(data => {
+                    // Veri başarıyla alındıysa
+                    if (data.temperature !== undefined && data.humidity !== undefined) {
+                        document.getElementById('temp').innerText = data.temperature + ' °C';
+                        document.getElementById('hum').innerText = data.humidity + ' %';
+                        hideError();  // Hata mesajını gizle
+                    } else {
+                        showError();  // Veri eksikse hata mesajını göster
+                    }
+                })
+                .catch(error => {
+                    console.error('Veri çekme hatası:', error);
+                    showError();  // Hata durumunda hata mesajını göster
+                });
+        }
+
+        function showError() {
+            document.getElementById('error-message').style.display = 'block';
+        }
+
+        function hideError() {
+            document.getElementById('error-message').style.display = 'none';
+        }
+
+        // Veriyi 2 saniyede bir güncelle
+        setInterval(fetchData, 2000);
+    </script>
+</head>
+<body onload="fetchData()">
+    <div class="container">
+        <h1>DHT22 Sensör Verileri</h1>
+        <div id="error-message" class="error" style="display: none;">
+            Sensör verisi alınamadı. Lütfen tekrar deneyin.
+        </div>
+        <div class="card">
+            <p>Sıcaklık</p>
+            <p class="value" id="temp">--</p>
+        </div>
+        <div class="card">
+            <p>Nem</p>
+            <p class="value" id="hum">--</p>
+        </div>
+    </div>
+</body>
+</html>
