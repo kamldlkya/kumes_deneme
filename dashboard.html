@@ -1,102 +1,359 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DHT22 Sensör Verileri</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f3f4f6;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Karem Yumurta - D Kümesi</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #121212;
+      color: #ffffff;
+      margin: 0;
+      padding: 0;
+    }
 
-        .container {
-            text-align: center;
-            background: #fff;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            border-radius: 10px;
-            padding: 20px;
-            width: 90%;
-            max-width: 400px;
-        }
+    .header {
+      background-color: #00bcd4;
+      padding: 20px;
+      text-align: center;
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #121212;
+    }
 
-        h1 {
-            color: #333;
-        }
+    .container {
+      max-width: 900px;
+      margin: 30px auto;
+      padding: 20px;
+      background-color: #1e1e1e;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+    }
 
-        .card {
-            background: #e3f2fd;
-            padding: 20px;
-            border-radius: 10px;
-            margin: 15px 0;
-        }
+    .title {
+      text-align: center;
+      font-size: 1.8rem;
+      margin-bottom: 20px;
+      color: #00bcd4;
+    }
 
-        .value {
-            font-size: 2em;
-            font-weight: bold;
-            color: #0288d1;
-        }
+    .data-section {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
 
-        .error {
-            color: red;
-            font-size: 1.2em;
-        }
-    </style>
-    <script>
-        // Arduino'nun sabit IP adresi
-        const arduinoIp = 'http://192.168.1.50/data';
+    .gauge-container {
+      width: 100%;
+      height: 50px;
+      background-color: #333;
+      border-radius: 25px;
+      position: relative;
+      box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.8);
+    }
 
-        function fetchData() {
-            fetch(arduinoIp)
-                .then(response => response.json())
-                .then(data => {
-                    // Veri başarıyla alındıysa
-                    if (data.temperature !== undefined && data.humidity !== undefined) {
-                        document.getElementById('temp').innerText = data.temperature + ' °C';
-                        document.getElementById('hum').innerText = data.humidity + ' %';
-                        hideError();  // Hata mesajını gizle
-                    } else {
-                        showError();  // Veri eksikse hata mesajını göster
-                    }
-                })
-                .catch(error => {
-                    console.error('Veri çekme hatası:', error);
-                    showError();  // Hata durumunda hata mesajını göster
-                });
-        }
+    .gauge-bar {
+      height: 100%;
+      border-radius: 25px;
+      transition: width 0.5s ease;
+    }
 
-        function showError() {
-            document.getElementById('error-message').style.display = 'block';
-        }
+    .gauge-label {
+      text-align: center;
+      font-size: 1rem;
+      color: #00bcd4;
+      margin-top: 10px;
+    }
 
-        function hideError() {
-            document.getElementById('error-message').style.display = 'none';
-        }
+    .batarya-section {
+      background: #232323;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+    }
 
-        // Veriyi 2 saniyede bir güncelle
-        setInterval(fetchData, 2000);
-    </script>
+    .batarya-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px;
+      border-bottom: 1px solid #333;
+    }
+
+    .batarya-item:last-child {
+      border-bottom: none;
+    }
+
+    .batarya-name {
+      font-size: 1rem;
+      color: #00bcd4;
+    }
+
+    .batarya-value {
+      font-size: 1rem;
+      font-weight: bold;
+      color: #ffffff;
+    }
+
+    input[type="number"] {
+      background-color: #333;
+      color: #ffffff;
+      border: 1px solid #00bcd4;
+      border-radius: 5px;
+      padding: 10px;
+      font-size: 1rem;
+      width: 100%;
+      margin: 5px 0;
+    }
+
+    input[type="number"]:focus {
+      border-color: #00bcd4;
+      outline: none;
+      background-color: #444;
+    }
+
+    input[type="submit"] {
+      background-color: #00bcd4;
+      color: #121212;
+      border: none;
+      padding: 12px 20px;
+      font-size: 1.1rem;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    input[type="submit"]:hover {
+      background-color: #008c9e;
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        padding: 10px;
+        margin: 10px;
+      }
+      .title {
+        font-size: 1.5rem;
+      }
+    }
+  </style>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
+    import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBsPxRXh8ugCCPBaCLUJE6tQD23LhU3zLc",
+      authDomain: "kumes-takip.firebaseapp.com",
+      databaseURL: "https://kumes-takip-default-rtdb.firebaseio.com",
+      projectId: "kumes-takip",
+      storageBucket: "kumes-takip.appspot.com",
+      messagingSenderId: "748072206927",
+      appId: "1:748072206927:web:57a94093e84f420da5203a",
+      measurementId: "G-9QV98SMVGJ"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    function fetchSensorData() {
+      const humidityRef = ref(db, 'sensorData/humidity');
+      const temperatureRef = ref(db, 'sensorData/temperature');
+
+      onValue(humidityRef, (snapshot) => {
+        const humidity = snapshot.val();
+        document.querySelector('#humidityValue').textContent = `${humidity}%`;
+        const humidityPercentage = Math.min(Math.max(humidity, 0), 100);
+        document.querySelector('#humidityBar').style.width = `${humidityPercentage}%`;
+      });
+
+      onValue(temperatureRef, (snapshot) => {
+        const temperature = snapshot.val();
+        document.querySelector('#temperatureValue').textContent = `${temperature}°C`;
+        const tempPercentage = Math.min(Math.max((temperature / 50) * 100, 0), 100);
+        document.querySelector('#temperatureBar').style.width = `${tempPercentage}%`;
+      });
+    }
+
+    function fetchBataryaData() {
+      const bataryaRef = ref(db, 'bataryaData');
+
+      onValue(bataryaRef, (snapshot) => {
+        const data = snapshot.val();
+        for (let i = 1; i <= 5; i++) {
+          document.querySelector(`#batarya${i}Value`).textContent = `${data[`batarya${i}`] || 0} L`;
+        }
+      });
+    }
+
+    function fetchYemOlumData() {
+      const yemRef = ref(db, 'yemOlumData');
+      const entryRef = ref(db, 'entryCount');
+
+      onValue(yemRef, (snapshot) => {
+        const data = snapshot.val();
+        document.querySelector('#yemValue').textContent = `${data?.yem || 0} t`;
+        document.querySelector('#olumValue').textContent = `${data?.olum || 0} adet`;
+      });
+
+      onValue(entryRef, (snapshot) => {
+        const entryData = snapshot.val();
+        document.querySelector('#entryCount').textContent = `${entryData?.count || 0} hayvan`;
+      });
+    }
+
+    document.querySelector('#submitWaterData').addEventListener('click', function() {
+      const batarya1 = document.querySelector('#batarya1Input').value;
+      const batarya2 = document.querySelector('#batarya2Input').value;
+      const batarya3 = document.querySelector('#batarya3Input').value;
+      const batarya4 = document.querySelector('#batarya4Input').value;
+      const batarya5 = document.querySelector('#batarya5Input').value;
+
+      if (batarya1 && batarya2 && batarya3 && batarya4 && batarya5) {
+        const bataryaRef = ref(db, 'suTuketimi');
+        const newEntry = {
+          batarya1: batarya1,
+          batarya2: batarya2,
+          batarya3: batarya3,
+          batarya4: batarya4,
+          batarya5: batarya5,
+          timestamp: new Date().toISOString()
+        };
+
+        set(bataryaRef, newEntry)
+          .then(() => {
+            alert('Su tüketimi başarıyla kaydedildi!');
+            document.querySelector('#batarya1Input').value = '';
+            document.querySelector('#batarya2Input').value = '';
+            document.querySelector('#batarya3Input').value = '';
+            document.querySelector('#batarya4Input').value = '';
+            document.querySelector('#batarya5Input').value = '';
+          })
+          .catch((error) => {
+            alert('Hata oluştu: ' + error.message);
+          });
+      } else {
+        alert('Lütfen tüm bataryalar için geçerli değerler girin.');
+      }
+    });
+
+    document.querySelector('#submitYemData').addEventListener('click', function() {
+      const yem = document.querySelector('#yemInput').value;
+
+      if (yem) {
+        const yemRef = ref(db, 'yemOlumData/yem');
+        set(yemRef, yem)
+          .then(() => {
+            alert('Yem bilgisi başarıyla kaydedildi!');
+            document.querySelector('#yemInput').value = '';
+          })
+          .catch((error) => {
+            alert('Hata oluştu: ' + error.message);
+          });
+      } else {
+        alert('Lütfen yem bilgisi girin.');
+      }
+    });
+
+    document.querySelector('#submitOlumData').addEventListener('click', function() {
+      const olum = document.querySelector('#olumInput').value;
+
+      if (olum) {
+        const olumRef = ref(db, 'yemOlumData/olum');
+        set(olumRef, olum)
+          .then(() => {
+            alert('Ölü sayısı başarıyla kaydedildi!');
+            document.querySelector('#olumInput').value = '';
+          })
+          .catch((error) => {
+            alert('Hata oluştu: ' + error.message);
+          });
+      } else {
+        alert('Lütfen ölüm bilgisi girin.');
+      }
+    });
+
+    document.querySelector('#submitEntryData').addEventListener('click', function() {
+      const entryCount = document.querySelector('#entryCountInput').value;
+
+      if (entryCount) {
+        const entryRef = ref(db, 'entryCount');
+        set(entryRef, { count: entryCount })
+          .then(() => {
+            alert('Kümes giriş sayısı başarıyla kaydedildi!');
+            document.querySelector('#entryCountInput').value = '';
+          })
+          .catch((error) => {
+            alert('Hata oluştu: ' + error.message);
+          });
+      } else {
+        alert('Lütfen kümes giriş sayısı girin.');
+      }
+    });
+
+    fetchSensorData();
+    fetchBataryaData();
+    fetchYemOlumData();
+  </script>
 </head>
-<body onload="fetchData()">
-    <div class="container">
-        <h1>DHT22 Sensör Verileri</h1>
-        <div id="error-message" class="error" style="display: none;">
-            Sensör verisi alınamadı. Lütfen tekrar deneyin.
-        </div>
-        <div class="card">
-            <p>Sıcaklık</p>
-            <p class="value" id="temp">--</p>
-        </div>
-        <div class="card">
-            <p>Nem</p>
-            <p class="value" id="hum">--</p>
-        </div>
+<body>
+  <div class="header">Karem Yumurta - D Kümesi</div>
+  <div class="container">
+    <div class="title">Isı ve Nem</div>
+    <div class="data-section">
+      <div>
+        <span>Isı: </span>
+        <span id="temperatureValue">-</span>
+      </div>
+      <div class="gauge-container">
+        <div id="temperatureBar" class="gauge-bar" style="background-color: #ff4d4d;"></div>
+      </div>
+      <div>
+        <span>Nem: </span>
+        <span id="humidityValue">-</span>
+      </div>
+      <div class="gauge-container">
+        <div id="humidityBar" class="gauge-bar" style="background-color: #4d94ff;"></div>
+      </div>
     </div>
+
+    <div class="title">Su Tüketimi</div>
+    <div class="data-section">
+      <label for="batarya1Input" class="gauge-label">Batarya 1 (L)</label>
+      <input id="batarya1Input" type="number" placeholder="Batarya 1 su tüketimi girin" />
+      
+      <label for="batarya2Input" class="gauge-label">Batarya 2 (L)</label>
+      <input id="batarya2Input" type="number" placeholder="Batarya 2 su tüketimi girin" />
+      
+      <label for="batarya3Input" class="gauge-label">Batarya 3 (L)</label>
+      <input id="batarya3Input" type="number" placeholder="Batarya 3 su tüketimi girin" />
+      
+      <label for="batarya4Input" class="gauge-label">Batarya 4 (L)</label>
+      <input id="batarya4Input" type="number" placeholder="Batarya 4 su tüketimi girin" />
+      
+      <label for="batarya5Input" class="gauge-label">Batarya 5 (L)</label>
+      <input id="batarya5Input" type="number" placeholder="Batarya 5 su tüketimi girin" />
+      
+      <input id="submitWaterData" type="submit" value="Kaydet" />
+    </div>
+
+    <div class="title">Yem Tüketimi</div>
+    <div class="data-section">
+      <input id="yemInput" type="number" placeholder="Yem tüketimi girin (ton)" />
+      <input id="submitYemData" type="submit" value="Yem Kaydet" />
+    </div>
+
+    <div class="title">Ölü Sayısı</div>
+    <div class="data-section">
+      <input id="olumInput" type="number" placeholder="Ölü sayısını girin" />
+      <input id="submitOlumData" type="submit" value="Ölü Sayısı Kaydet" />
+    </div>
+
+    <div class="title">Kümes Giriş Sayısı</div>
+    <div class="data-section">
+      <input id="entryCountInput" type="number" placeholder="Kümes giriş sayısını girin" />
+      <input id="submitEntryData" type="submit" value="Giriş Sayısı Kaydet" />
+    </div>
+  </div>
 </body>
 </html>
